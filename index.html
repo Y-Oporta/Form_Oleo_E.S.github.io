@@ -992,10 +992,13 @@
             return missingCount === 0;
         }
 
+
+
+
         async function submitEvaluation() {
-            const allAnswered = validateRequiredRatings();
-            if (!allAnswered) {
-                showToast("⚠️ Por favor, selecciona 1, 2 o 3 para TODAS las preguntas", 3500);
+
+            if (!validateRequiredRatings()) {
+                showToast("⚠️ Responde todas las preguntas", 3000);
                 return;
             }
 
@@ -1007,28 +1010,54 @@
             submitBtn.disabled = true;
             resetBtn.disabled = true;
 
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
             const formData = getFormDataForExport();
-            localStorage.setItem('campamento_satisfaccion_ultimo_envio', JSON.stringify(formData));
 
-            console.log("=== EVALUACIÓN ENVIADA ===");
-            console.log(JSON.stringify(formData, null, 2));
+            const respuestasPlanas = [];
+            formData.respuestas_por_seccion.forEach(sec => {
+                sec.items.forEach(item => {
+                    respuestasPlanas.push(item.puntuacion);
+                });
+            });
 
-            let resumen = "✅ Evaluación registrada exitosamente.\n\n";
-            resumen += `📌 Campamento: ${formData.metadata.campamento || "—"} | Sector: ${formData.metadata.sector || "—"}\n`;
-            resumen += `📅 Fecha: ${formData.metadata.fecha || "—"}\n`;
-            resumen += `💬 Comentarios: ${formData.comentarios ? "Incluidos" : "Sin comentarios"}\n`;
-            resumen += `📊 Total: ${formData.respuestas_por_seccion.reduce((acc, sec) => acc + sec.items.length, 0)} preguntas calificadas.\n\n`;
-            resumen += `Los datos se analizan de forma grupal. ¡Gracias por tu participación!`;
+            const datosEnviar = {
+                codigo: formData.metadata.codigo,
+                campamento: formData.metadata.campamento,
+                sector: formData.metadata.sector,
+                fecha: formData.metadata.fecha,
+                respuestas: respuestasPlanas,
+                comentarios: formData.comentarios
+            };
 
-            submitOverlay.classList.remove('active');
-            submitBtn.disabled = false;
-            resetBtn.disabled = false;
+            try {
 
-            alert(resumen);
-            showToast("📊 Respuestas guardadas. ¡Gracias!", 3000);
+                await fetch("https://script.google.com/macros/s/AKfycbypVXy2wn_jUAgjlkzPAl2neY6mUH3bCAUWrvnE07Ko67Un2zPRw4krGU0t5oM4jTtu/exec", {
+                    method: "POST",
+                    mode: "no-cors", // MUY IMPORTANTE
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(datosEnviar)
+                });
+
+                submitOverlay.classList.remove('active');
+                submitBtn.disabled = false;
+                resetBtn.disabled = false;
+
+                alert("✅ Evaluación enviada correctamente");
+
+            } catch (error) {
+
+                submitOverlay.classList.remove('active');
+                submitBtn.disabled = false;
+                resetBtn.disabled = false;
+
+                alert("❌ Error al enviar");
+                console.error(error);
+            }
         }
+
+
+
 
         function attachAutoSave() {
             const container = document.getElementById('form-sections-container');
