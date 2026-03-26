@@ -98,7 +98,7 @@
             }
         }
 
-        /* Loader overlay para el envío - Compatibilidad con Safari */
+        /* Loader overlay para el envío */
         .submit-overlay {
             position: fixed;
             top: 0;
@@ -106,7 +106,6 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            /* Soporte para Safari y otros navegadores */
             -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
             display: flex;
@@ -140,7 +139,7 @@
             color: #1a5e6f;
         }
 
-        /* Contenido principal (inicialmente oculto) */
+        /* Contenido principal */
         .main-content {
             opacity: 0;
             transition: opacity 0.5s ease;
@@ -261,7 +260,13 @@
             width: 100%;
             -webkit-appearance: none;
             appearance: none;
-            cursor: pointer;
+        }
+
+        .meta-item input.error-field,
+        .meta-item select.error-field {
+            border-color: #e74c3c;
+            background-color: #fff5f5;
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
         }
 
         .meta-item input[type="date"] {
@@ -346,6 +351,11 @@
             border-bottom: 1px solid #f0f2f5;
             transition: background 0.2s ease;
             gap: 1rem;
+        }
+
+        .question-row.error-question {
+            background-color: #fff5f5;
+            border-left: 3px solid #e74c3c;
         }
 
         .question-row:active {
@@ -480,6 +490,12 @@
             transition: all 0.2s;
         }
 
+        textarea.error-field {
+            border-color: #e74c3c;
+            background-color: #fff5f5;
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+        }
+
         @media (max-width: 480px) {
             textarea {
                 font-size: 1rem;
@@ -561,6 +577,15 @@
             transform: translateY(0);
         }
 
+        .btn-warning {
+            background: #f5b042;
+            color: #2c3e2f;
+        }
+
+        .btn-warning:hover {
+            background: #e09d2c;
+        }
+
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -623,18 +648,37 @@
             scroll-behavior: smooth;
         }
 
-        /* Fallback para Safari si backdrop-filter no es soportado */
         @supports not (backdrop-filter: blur(8px)) {
             .submit-overlay {
                 background: rgba(0, 0, 0, 0.85);
             }
+        }
+
+        .pending-badge {
+            background: #f5b042;
+            color: #2c3e2f;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+        .error-summary {
+            background: #fff5f5;
+            border-left: 4px solid #e74c3c;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            color: #c0392b;
+            font-size: 0.85rem;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Loader de entrada -->
     <div class="initial-loader" id="initialLoader">
         <div class="loading">
             <span></span>
@@ -645,7 +689,6 @@
         </div>
     </div>
 
-    <!-- Loader overlay para el envío -->
     <div class="submit-overlay" id="submitOverlay">
         <div class="submit-loader">
             <div class="loading">
@@ -659,7 +702,6 @@
         </div>
     </div>
 
-    <!-- Contenido principal -->
     <div class="main-content" id="mainContent">
         <div class="container">
             <div class="header">
@@ -670,17 +712,16 @@
                 <div class="meta-fields">
                     <div class="meta-item">
                         <label for="codigo">Código (opcional)</label>
-                        <input type="text" id="codigo" name="codigo" placeholder="Ej: CAMP-01" maxlength="30"
-                            title="Código identificador opcional del participante" inputmode="text">
+                        <input type="text" id="codigo" name="codigo" placeholder="Ej: CAMP-01" maxlength="30">
                     </div>
                     <div class="meta-item">
-                        <label for="campamento">Campamento</label>
+                        <label for="campamento">Campamento *</label>
                         <input type="text" id="campamento" name="campamento" placeholder="Nombre del campamento"
-                            title="Nombre del campamento donde labora" inputmode="text">
+                            required>
                     </div>
                     <div class="meta-item">
-                        <label for="sector">Sector</label>
-                        <select id="sector" name="sector" title="Seleccione el sector donde labora">
+                        <label for="sector">Sector *</label>
+                        <select id="sector" name="sector" required>
                             <option value="">Seleccionar sector</option>
                             <option value="Sector 1">Sector 1</option>
                             <option value="Sector 2">Sector 2</option>
@@ -697,31 +738,33 @@
                         </select>
                     </div>
                     <div class="meta-item">
-                        <label for="fecha">Fecha</label>
-                        <input type="date" id="fecha" name="fecha" title="Seleccione la fecha de la evaluación">
+                        <label for="fecha">Fecha *</label>
+                        <input type="date" id="fecha" name="fecha" required>
                     </div>
                 </div>
             </div>
 
             <div class="notice">
-                ✅ La encuesta es <strong>anónima y voluntaria</strong>. Los datos generales ayudan al análisis interno.
-                La información se analiza de forma grupal y no se revisan respuestas individuales.
+                ✅ La encuesta es <strong>anónima y voluntaria</strong>. Los datos generales ayudan al análisis
+                interno.<br>
+                <strong>⚠️ Todos los campos y preguntas son obligatorios.</strong>
             </div>
 
+            <div id="errorContainer"></div>
             <div id="form-sections-container"></div>
 
             <div class="comments-area">
-                <label for="comentarios">💬 Comentarios y recomendaciones:</label>
+                <label for="comentarios">💬 Comentarios y recomendaciones *</label>
                 <textarea id="comentarios" name="comentarios" rows="4"
-                    placeholder="Escribe aquí tus sugerencias, observaciones o comentarios..."
-                    title="Espacio para escribir comentarios y sugerencias adicionales"></textarea>
+                    placeholder="Escribe aquí tus sugerencias, observaciones o comentarios..." required></textarea>
             </div>
 
             <div class="action-buttons">
-                <button class="btn btn-secondary" id="resetBtn" title="Reiniciar todas las respuestas del formulario">🔄
-                    Reiniciar</button>
-                <button class="btn btn-primary" id="submitBtn" title="Enviar la evaluación de satisfacción">📬 Enviar
-                    evaluación</button>
+                <button class="btn btn-secondary" id="clearBtn">🧹 Limpiar campos</button>
+                <button class="btn btn-primary" id="submitBtn">📬 Enviar evaluación</button>
+            </div>
+            <div class="action-buttons" id="pendingBtnContainer" style="display: none;">
+                <button class="btn btn-warning" id="sendPendingBtn">📤 Enviar datos pendientes</button>
             </div>
             <footer>
                 Marca con una 'X' el número que mejor refleje tu satisfacción • 1 = Malo / 2 = Regular / 3 = Bueno
@@ -732,72 +775,15 @@
 
     <script>
         const sectionsData = [
-            {
-                title: "A. Satisfacción General en el Campamento",
-                questions: [
-                    "Me siento satisfecho(a) con el trato que recibo del personal del campamento",
-                    "Me siento satisfecho(a) con las mejoras realizadas en el campamento",
-                    "Me siento satisfecho(a) con las condiciones del campamento (higiene, orden y limpieza)."
-                ]
-            },
-            {
-                title: "B. Alimentación en el Campamento",
-                questions: [
-                    "Me siento satisfecho(a) con la variedad y cantidad de la comida.",
-                    "Me siento satisfecho(a) con la calidad y preparación de los alimentos."
-                ]
-            },
-            {
-                title: "C. Actividades de Campo",
-                questions: [
-                    "Me siento satisfecho(a) con el tipo de actividad que realizo.",
-                    "Me siento satisfecho(a) con el pago que recibo por mi trabajo.",
-                    "Me siento satisfecho(a) con las indicaciones recibidas para realizar mi trabajo."
-                ]
-            },
-            {
-                title: "D. Trato y Supervisión",
-                questions: [
-                    "Me siento satisfecho(a) con el trato que recibo de supervisores.",
-                    "Me siento satisfecho(a) con la motivación y reconocimiento en mi trabajo.",
-                    "Me siento satisfecho(a) con la forma en que se escuchan y resuelven sugerencias o reclamos."
-                ]
-            },
-            {
-                title: "E. Logística y Horarios",
-                questions: [
-                    "Me siento satisfecho(a) con los recorridos o traslados hacia el trabajo.",
-                    "Me siento satisfecho(a) con el cumplimiento de los horarios de recorrido"
-                ]
-            },
-            {
-                title: "F. Equipos de Protección Personal (EPP)",
-                questions: [
-                    "Me siento satisfecho(a) con el EPP que se me entrega.",
-                    "Me siento satisfecho(a) con el estado y renovación del EPP."
-                ]
-            },
-            {
-                title: "G. Atención en Enfermería",
-                questions: [
-                    "Me siento satisfecho(a) con la atención recibida en enfermería.",
-                    "Me siento satisfecho(a) con el seguimiento que brinda el personal de salud."
-                ]
-            },
-            {
-                title: "H. Comisariato",
-                questions: [
-                    "Me siento satisfecho(a) con la variedad y disponibilidad de productos.",
-                    "Me siento satisfecho(a) con los precios de los productos."
-                ]
-            },
-            {
-                title: "I. Deportes y Medios de Recreación",
-                questions: [
-                    "Me siento satisfecho(a) con los espacios para practicar deportes.",
-                    "Me siento satisfecho(a) con las actividades recreativas que se organizan."
-                ]
-            }
+            { title: "A. Satisfacción General en el Campamento", questions: ["Me siento satisfecho(a) con el trato que recibo del personal del campamento", "Me siento satisfecho(a) con las mejoras realizadas en el campamento", "Me siento satisfecho(a) con las condiciones del campamento (higiene, orden y limpieza)."] },
+            { title: "B. Alimentación en el Campamento", questions: ["Me siento satisfecho(a) con la variedad y cantidad de la comida.", "Me siento satisfecho(a) con la calidad y preparación de los alimentos."] },
+            { title: "C. Actividades de Campo", questions: ["Me siento satisfecho(a) con el tipo de actividad que realizo.", "Me siento satisfecho(a) con el pago que recibo por mi trabajo.", "Me siento satisfecho(a) con las indicaciones recibidas para realizar mi trabajo."] },
+            { title: "D. Trato y Supervisión", questions: ["Me siento satisfecho(a) con el trato que recibo de supervisores.", "Me siento satisfecho(a) con la motivación y reconocimiento en mi trabajo.", "Me siento satisfecho(a) con la forma en que se escuchan y resuelven sugerencias o reclamos."] },
+            { title: "E. Logística y Horarios", questions: ["Me siento satisfecho(a) con los recorridos o traslados hacia el trabajo.", "Me siento satisfecho(a) con el cumplimiento de los horarios de recorrido"] },
+            { title: "F. Equipos de Protección Personal (EPP)", questions: ["Me siento satisfecho(a) con el EPP que se me entrega.", "Me siento satisfecho(a) con el estado y renovación del EPP."] },
+            { title: "G. Atención en Enfermería", questions: ["Me siento satisfecho(a) con la atención recibida en enfermería.", "Me siento satisfecho(a) con el seguimiento que brinda el personal de salud."] },
+            { title: "H. Comisariato", questions: ["Me siento satisfecho(a) con la variedad y disponibilidad de productos.", "Me siento satisfecho(a) con los precios de los productos."] },
+            { title: "I. Deportes y Medios de Recreación", questions: ["Me siento satisfecho(a) con los espacios para practicar deportes.", "Me siento satisfecho(a) con las actividades recreativas que se organizan."] }
         ];
 
         let allRadioGroups = [];
@@ -810,6 +796,7 @@
             sectionsData.forEach((section, secIndex) => {
                 const sectionDiv = document.createElement('div');
                 sectionDiv.className = 'section';
+                sectionDiv.setAttribute('data-section-index', secIndex);
 
                 const titleDiv = document.createElement('div');
                 titleDiv.className = 'section-title';
@@ -820,6 +807,9 @@
                     const groupName = `sec_${secIndex}_q_${qIndex}`;
                     const rowDiv = document.createElement('div');
                     rowDiv.className = 'question-row';
+                    rowDiv.setAttribute('data-question-group', groupName);
+                    rowDiv.setAttribute('data-section', secIndex);
+                    rowDiv.setAttribute('data-question', qIndex);
 
                     const questionSpan = document.createElement('div');
                     questionSpan.className = 'question-text';
@@ -828,13 +818,8 @@
                     const ratingDiv = document.createElement('div');
                     ratingDiv.className = 'rating-group';
                     ratingDiv.setAttribute('role', 'radiogroup');
-                    ratingDiv.setAttribute('aria-label', `Opciones de calificación para: ${questionText}`);
 
-                    const options = [
-                        { value: 1, label: '1 · Malo' },
-                        { value: 2, label: '2 · Regular' },
-                        { value: 3, label: '3 · Bueno' }
-                    ];
+                    const options = [{ value: 1, label: '1 · Malo' }, { value: 2, label: '2 · Regular' }, { value: 3, label: '3 · Bueno' }];
 
                     options.forEach(opt => {
                         const radioId = `${groupName}_${opt.value}`;
@@ -846,7 +831,6 @@
                         radio.name = groupName;
                         radio.value = opt.value;
                         radio.id = radioId;
-                        radio.setAttribute('aria-label', `${opt.label} para: ${questionText.substring(0, 50)}`);
 
                         const label = document.createElement('label');
                         label.htmlFor = radioId;
@@ -856,13 +840,7 @@
                         radioOption.appendChild(label);
                         ratingDiv.appendChild(radioOption);
 
-                        allRadioGroups.push({
-                            sectionIdx: secIndex,
-                            questionIdx: qIndex,
-                            name: groupName,
-                            radioElement: radio,
-                            value: opt.value
-                        });
+                        allRadioGroups.push({ sectionIdx: secIndex, questionIdx: qIndex, name: groupName, radioElement: radio, value: opt.value });
                     });
 
                     rowDiv.appendChild(questionSpan);
@@ -906,6 +884,11 @@
             return answers;
         }
 
+        function storeCurrentAnswers() {
+            const answers = collectAnswers();
+            localStorage.setItem('campamento_satisfaccion_respuestas', JSON.stringify(answers));
+        }
+
         function loadStoredAnswers() {
             const stored = localStorage.getItem('campamento_satisfaccion_respuestas');
             if (!stored) return;
@@ -928,17 +911,110 @@
             } catch (e) { console.warn(e); }
         }
 
-        function storeCurrentAnswers() {
-            const answers = collectAnswers();
-            localStorage.setItem('campamento_satisfaccion_respuestas', JSON.stringify(answers));
-        }
-
-        function resetAllAnswers() {
+        // Limpiar SOLO campos visibles, NO eliminar datos pendientes
+        function clearVisibleFieldsOnly() {
+            // Limpiar radios
             for (let item of allRadioGroups) {
                 if (item.radioElement) item.radioElement.checked = false;
             }
-            showToast("✓ Todas las calificaciones han sido reiniciadas");
+            // Limpiar campos de metadatos
+            document.getElementById('codigo').value = '';
+            document.getElementById('campamento').value = '';
+            document.getElementById('sector').value = '';
+            document.getElementById('fecha').value = '';
+            document.getElementById('comentarios').value = '';
+            // Establecer fecha actual por defecto
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fecha').value = today;
+
+            // Limpiar estilos de error
+            clearAllErrors();
+
+            // Limpiar respuestas guardadas en localStorage (solo las respuestas del formulario, NO los pendientes)
             localStorage.removeItem('campamento_satisfaccion_respuestas');
+            localStorage.removeItem('campamento_meta_fields');
+            localStorage.removeItem('campamento_comentario_temp');
+
+            showToast("✓ Campos del formulario limpiados. Los datos pendientes de envío se conservan.");
+        }
+
+        function clearAllErrors() {
+            // Limpiar errores de campos de metadatos
+            document.querySelectorAll('.error-field').forEach(el => el.classList.remove('error-field'));
+            document.querySelectorAll('.error-question').forEach(el => el.classList.remove('error-question'));
+            const errorContainer = document.getElementById('errorContainer');
+            if (errorContainer) errorContainer.innerHTML = '';
+        }
+
+        function showFieldErrors() {
+            clearAllErrors();
+
+            const errors = [];
+            const answers = collectAnswers();
+
+            // Validar campos de metadatos
+            const campamento = document.getElementById('campamento').value.trim();
+            const sector = document.getElementById('sector').value;
+            const fecha = document.getElementById('fecha').value;
+            const comentarios = document.getElementById('comentarios').value.trim();
+
+            if (!campamento) {
+                document.getElementById('campamento').classList.add('error-field');
+                errors.push('• Campo "Campamento"');
+            }
+            if (!sector) {
+                document.getElementById('sector').classList.add('error-field');
+                errors.push('• Campo "Sector"');
+            }
+            if (!fecha) {
+                document.getElementById('fecha').classList.add('error-field');
+                errors.push('• Campo "Fecha"');
+            }
+            if (!comentarios) {
+                document.getElementById('comentarios').classList.add('error-field');
+                errors.push('• Campo "Comentarios"');
+            }
+
+            // Validar preguntas y resaltar las que faltan
+            let missingQuestions = 0;
+            for (let s = 0; s < answers.length; s++) {
+                for (let q = 0; q < answers[s].length; q++) {
+                    if (answers[s][q] === null) {
+                        missingQuestions++;
+                        const groupName = `sec_${s}_q_${q}`;
+                        const questionRow = document.querySelector(`.question-row[data-question-group="${groupName}"]`);
+                        if (questionRow) {
+                            questionRow.classList.add('error-question');
+                        }
+                    }
+                }
+            }
+
+            if (missingQuestions > 0) {
+                errors.push(`• ${missingQuestions} pregunta(s) sin responder`);
+            }
+
+            // Mostrar resumen de errores
+            const errorContainer = document.getElementById('errorContainer');
+            if (errors.length > 0) {
+                errorContainer.innerHTML = `
+                    <div class="error-summary">
+                        <strong>⚠️ Por favor completa los siguientes campos obligatorios:</strong><br>
+                        ${errors.join('<br>')}
+                    </div>
+                `;
+                // Scroll al primer error
+                const firstError = document.querySelector('.error-field, .error-question');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            return errors.length === 0;
+        }
+
+        function validateAllRequired() {
+            return showFieldErrors();
         }
 
         function showToast(message, duration = 2800) {
@@ -981,37 +1057,50 @@
             return result;
         }
 
-        function validateRequiredRatings() {
-            const answers = collectAnswers();
-            let missingCount = 0;
-            for (let s = 0; s < answers.length; s++) {
-                for (let q = 0; q < answers[s].length; q++) {
-                    if (answers[s][q] === null) missingCount++;
-                }
-            }
-            return missingCount === 0;
+        function savePendingData(data) {
+            const pending = JSON.parse(localStorage.getItem('pending_evaluations') || '[]');
+            pending.push({ ...data, timestamp: Date.now() });
+            localStorage.setItem('pending_evaluations', JSON.stringify(pending));
+            updatePendingButton();
         }
 
+        function updatePendingButton() {
+            const pending = JSON.parse(localStorage.getItem('pending_evaluations') || '[]');
+            const container = document.getElementById('pendingBtnContainer');
+            if (pending.length > 0) {
+                container.style.display = 'flex';
+                const btn = document.getElementById('sendPendingBtn');
+                btn.innerHTML = `📤 Enviar datos pendientes (${pending.length})`;
+            } else {
+                container.style.display = 'none';
+            }
+        }
 
-
+        async function sendToServer(datosEnviar) {
+            const response = await fetch("https://script.google.com/macros/s/AKfycbypVXy2wn_jUAgjlkzPAl2neY6mUH3bCAUWrvnE07Ko67Un2zPRw4krGU0t5oM4jTtu/exec", {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datosEnviar)
+            });
+            return response;
+        }
 
         async function submitEvaluation() {
-
-            if (!validateRequiredRatings()) {
-                showToast("⚠️ Responde todas las preguntas", 3000);
+            if (!validateAllRequired()) {
+                showToast("⚠️ Completa todos los campos resaltados en rojo", 3000);
                 return;
             }
 
             const submitOverlay = document.getElementById('submitOverlay');
             const submitBtn = document.getElementById('submitBtn');
-            const resetBtn = document.getElementById('resetBtn');
+            const clearBtn = document.getElementById('clearBtn');
 
             submitOverlay.classList.add('active');
             submitBtn.disabled = true;
-            resetBtn.disabled = true;
+            clearBtn.disabled = true;
 
             const formData = getFormDataForExport();
-
             const respuestasPlanas = [];
             formData.respuestas_por_seccion.forEach(sec => {
                 sec.items.forEach(item => {
@@ -1029,41 +1118,77 @@
             };
 
             try {
-
-                await fetch("https://script.google.com/macros/s/AKfycbypVXy2wn_jUAgjlkzPAl2neY6mUH3bCAUWrvnE07Ko67Un2zPRw4krGU0t5oM4jTtu/exec", {
-                    method: "POST",
-                    mode: "no-cors", // MUY IMPORTANTE
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(datosEnviar)
-                });
-
+                await sendToServer(datosEnviar);
                 submitOverlay.classList.remove('active');
                 submitBtn.disabled = false;
-                resetBtn.disabled = false;
-
+                clearBtn.disabled = false;
                 alert("✅ Evaluación enviada correctamente");
-
+                clearVisibleFieldsOnly();
             } catch (error) {
-
+                console.warn("Error de conexión, guardando localmente:", error);
+                savePendingData(datosEnviar);
                 submitOverlay.classList.remove('active');
                 submitBtn.disabled = false;
-                resetBtn.disabled = false;
-
-                alert("❌ Error al enviar");
-                console.error(error);
+                clearBtn.disabled = false;
+                alert("⚠️ Sin conexión a internet. La evaluación se ha guardado localmente y se enviará cuando haya conexión.");
+                clearVisibleFieldsOnly();
             }
         }
 
+        async function sendPendingEvaluations() {
+            const pending = JSON.parse(localStorage.getItem('pending_evaluations') || '[]');
+            if (pending.length === 0) {
+                showToast("No hay datos pendientes");
+                return;
+            }
 
+            const submitOverlay = document.getElementById('submitOverlay');
+            const submitBtn = document.getElementById('submitBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const sendPendingBtn = document.getElementById('sendPendingBtn');
 
+            submitOverlay.classList.add('active');
+            submitBtn.disabled = true;
+            clearBtn.disabled = true;
+            sendPendingBtn.disabled = true;
+
+            let successCount = 0;
+            const failed = [];
+
+            for (let i = 0; i < pending.length; i++) {
+                try {
+                    await sendToServer(pending[i]);
+                    successCount++;
+                } catch (error) {
+                    failed.push(pending[i]);
+                }
+            }
+
+            if (failed.length === 0) {
+                localStorage.removeItem('pending_evaluations');
+                showToast(`✅ ${successCount} evaluación(es) enviada(s) correctamente`);
+            } else {
+                localStorage.setItem('pending_evaluations', JSON.stringify(failed));
+                showToast(`⚠️ Se enviaron ${successCount} de ${pending.length}. Quedan ${failed.length} pendientes.`);
+            }
+
+            submitOverlay.classList.remove('active');
+            submitBtn.disabled = false;
+            clearBtn.disabled = false;
+            sendPendingBtn.disabled = false;
+            updatePendingButton();
+        }
 
         function attachAutoSave() {
             const container = document.getElementById('form-sections-container');
             container.addEventListener('change', (e) => {
                 if (e.target && e.target.type === 'radio') {
                     storeCurrentAnswers();
+                    // Limpiar error de esta pregunta si se completa
+                    const questionRow = e.target.closest('.question-row');
+                    if (questionRow) {
+                        questionRow.classList.remove('error-question');
+                    }
                 }
             });
 
@@ -1075,16 +1200,19 @@
                     fecha: document.getElementById('fecha').value,
                 };
                 localStorage.setItem('campamento_meta_fields', JSON.stringify(meta));
+                // Limpiar error al editar
+                document.getElementById('campamento').classList.remove('error-field');
+                document.getElementById('sector').classList.remove('error-field');
+                document.getElementById('fecha').classList.remove('error-field');
             };
 
             document.getElementById('codigo').addEventListener('input', saveMeta);
             document.getElementById('campamento').addEventListener('input', saveMeta);
             document.getElementById('sector').addEventListener('change', saveMeta);
             document.getElementById('fecha').addEventListener('change', saveMeta);
-
             document.getElementById('comentarios').addEventListener('input', () => {
-                const coment = document.getElementById('comentarios').value;
-                localStorage.setItem('campamento_comentario_temp', coment);
+                localStorage.setItem('campamento_comentario_temp', document.getElementById('comentarios').value);
+                document.getElementById('comentarios').classList.remove('error-field');
             });
 
             const savedComment = localStorage.getItem('campamento_comentario_temp');
@@ -1100,11 +1228,6 @@
                     if (meta.fecha) document.getElementById('fecha').value = meta.fecha;
                 } catch (e) { }
             }
-
-            document.getElementById('codigo').addEventListener('input', () => storeCurrentAnswers());
-            document.getElementById('campamento').addEventListener('input', () => storeCurrentAnswers());
-            document.getElementById('sector').addEventListener('change', () => storeCurrentAnswers());
-            document.getElementById('fecha').addEventListener('change', () => storeCurrentAnswers());
         }
 
         function setDefaultDate() {
@@ -1121,16 +1244,16 @@
             attachAutoSave();
             loadStoredAnswers();
 
-            document.getElementById('resetBtn').addEventListener('click', () => {
-                resetAllAnswers();
-                localStorage.removeItem('campamento_satisfaccion_respuestas');
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                if (confirm("¿Estás seguro de limpiar los campos del formulario? Los datos pendientes de envío se conservarán.")) {
+                    clearVisibleFieldsOnly();
+                }
             });
 
             document.getElementById('submitBtn').addEventListener('click', submitEvaluation);
+            document.getElementById('sendPendingBtn').addEventListener('click', sendPendingEvaluations);
 
-            document.getElementById('comentarios').addEventListener('input', () => {
-                localStorage.setItem('campamento_comentario_temp', document.getElementById('comentarios').value);
-            });
+            updatePendingButton();
 
             setTimeout(() => {
                 const initialLoader = document.getElementById('initialLoader');
