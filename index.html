@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Evaluación de Satisfacción - Personal de Campamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #eef2f5 0%, #e3e9ef 100%);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 1rem;
+            color: #1a2c3e;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 2rem;
+            }
+
+            .container {
+                padding: 2rem 2.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+        }
+
+        .header {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1.2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+            }
+        }
+
+        .title-section h1 {
+            font-size: clamp(1.3rem, 5vw, 1.8rem);
+            font-weight: 700;
+            color: #0b3b4f;
+            letter-spacing: -0.3px;
+        }
+
+        .title-section p {
+            color: #4a627a;
+            margin-top: 6px;
+            font-size: clamp(0.8rem, 3vw, 0.9rem);
+        }
+
+        .meta-fields {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .meta-fields {
+                width: auto;
+                flex-wrap: nowrap;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .meta-fields {
+                flex-direction: column;
+            }
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .meta-item label {
+            font-weight: 600;
+            color: #2c5a6e;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .meta-item input,
+        .meta-item select {
+            background: white;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #0f2b38;
+            transition: all 0.2s;
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        /* Estilo específico para input date en móviles */
+        .meta-item input[type="date"] {
+            position: relative;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c5a6e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3e%3c/rect%3e%3cline x1='16' y1='2' x2='16' y2='6'%3e%3c/line%3e%3cline x1='8' y1='2' x2='8' y2='6'%3e%3c/line%3e%3cline x1='3' y1='10' x2='21' y2='10'%3e%3c/line%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 18px;
+            padding-right: 36px;
+        }
+
+        @media (max-width: 480px) {
+
+            .meta-item input,
+            .meta-item select {
+                padding: 12px 12px;
+                font-size: 1rem;
+            }
+
+            .meta-item input[type="date"] {
+                padding-right: 40px;
+                background-size: 20px;
+            }
+        }
+
+        .meta-item input:focus,
+        .meta-item select:focus {
+            outline: none;
+            border-color: #2c9b7a;
+            box-shadow: 0 0 0 3px rgba(44, 155, 122, 0.1);
+        }
+
+        .notice {
+            background: #fef9e3;
+            border-left: 4px solid #f5b042;
+            padding: 1rem;
+            border-radius: 16px;
+            margin-bottom: 1.8rem;
+            font-size: 0.85rem;
+            color: #7a6300;
+        }
+
+        @media (max-width: 480px) {
+            .notice {
+                font-size: 0.8rem;
+                padding: 0.9rem;
+            }
+        }
+
+        .section {
+            background: #ffffff;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e9edf2;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .section-title {
+            background: #f8fafc;
+            padding: 1rem 1.2rem;
+            font-weight: 700;
+            font-size: clamp(1rem, 4vw, 1.15rem);
+            color: #1f5e6e;
+            border-bottom: 1px solid #e9edf2;
+        }
+
+        @media (max-width: 480px) {
+            .section-title {
+                padding: 0.9rem 1rem;
+            }
+        }
+
+        .question-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #f0f2f5;
+            transition: background 0.2s ease;
+            gap: 1rem;
+        }
+
+        .question-row:active {
+            background: #fafbfd;
+        }
+
+        @media (max-width: 768px) {
+            .question-row {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem;
+            }
+        }
+
+        .question-text {
+            flex: 2;
+            font-size: clamp(0.9rem, 3.5vw, 0.95rem);
+            font-weight: 500;
+            color: #1e2f3c;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        @media (max-width: 768px) {
+            .question-text {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        .rating-group {
+            display: flex;
+            gap: 0.8rem;
+            background: #f9fbfd;
+            padding: 0.5rem 0.8rem;
+            border-radius: 60px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 480px) {
+            .rating-group {
+                width: 100%;
+                justify-content: space-around;
+                gap: 0.5rem;
+                padding: 0.6rem;
+            }
+        }
+
+        .rating-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.1s;
+            padding: 5px 8px;
+            border-radius: 40px;
+        }
+
+        @media (max-width: 480px) {
+            .rating-option {
+                flex: 1;
+                justify-content: center;
+                padding: 8px 4px;
+            }
+        }
+
+        .rating-option:active {
+            transform: scale(0.96);
+        }
+
+        .rating-option input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #2c9b7a;
+            margin: 0;
+        }
+
+        @media (max-width: 480px) {
+            .rating-option input {
+                width: 22px;
+                height: 22px;
+            }
+        }
+
+        .rating-option label {
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #2d4a5c;
+            font-weight: 500;
+        }
+
+        @media (max-width: 480px) {
+            .rating-option label {
+                font-size: 0.85rem;
+            }
+        }
+
+        .rating-option:has(input:checked) {
+            background: #e6f4ef;
+        }
+
+        .rating-option:has(input:checked) label {
+            color: #117f5d;
+            font-weight: 700;
+        }
+
+        .comments-area {
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .comments-area label {
+            font-weight: 700;
+            color: #1a5e6f;
+            display: block;
+            margin-bottom: 0.7rem;
+            font-size: 1rem;
+        }
+
+        textarea {
+            width: 100%;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            background: #fefefe;
+            transition: all 0.2s;
+        }
+
+        @media (max-width: 480px) {
+            textarea {
+                font-size: 1rem;
+                padding: 0.9rem;
+            }
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #2c9b7a;
+            box-shadow: 0 0 0 3px rgba(44, 155, 122, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .action-buttons {
+                justify-content: space-between;
+            }
+        }
+
+        .btn {
+            border: none;
+            padding: 0.9rem 1.8rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #eef2f5;
+            color: #1e4b5e;
+            flex: 1;
+            min-width: 160px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @media (max-width: 480px) {
+            .btn {
+                padding: 0.9rem 1.2rem;
+                font-size: 0.9rem;
+                min-width: 140px;
+            }
+        }
+
+        .btn-primary {
+            background: #1f7760;
+            color: white;
+            box-shadow: 0 2px 8px rgba(31, 119, 96, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: #0f5e4b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(31, 119, 96, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2c5f73;
+        }
+
+        .btn-secondary:hover {
+            background: #d0dce8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e2f3c;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 90%;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            .toast-message {
+                white-space: normal;
+                max-width: 85%;
+                font-size: 0.8rem;
+                padding: 10px 18px;
+            }
+        }
+
+        footer {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #7f8c9a;
+            border-top: 1px solid #e2edf2;
+            padding-top: 1.2rem;
+        }
+
+        @media (max-width: 480px) {
+            footer {
+                font-size: 0.65rem;
+            }
+        }
+
+        input,
+        select,
+        button,
+        .rating-option {
+            touch-action: manipulation;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Mejora para que el calendario en móviles sea más visible */
+        @media (hover: none) and (pointer: coarse) {
+            .meta-item input[type="date"] {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="title-section">
+                <h1>📋 Evaluación de satisfacción</h1>
+                <p>Personal de campamento · Escala: 1 = Malo &nbsp;|&nbsp; 2 = Regular &nbsp;|&nbsp; 3 = Bueno</p>
+            </div>
+            <div class="meta-fields">
+                <div class="meta-item">
+                    <label for="codigo">Código (opcional)</label>
+                    <input type="text" id="codigo" name="codigo" placeholder="Ej: CAMP-01" maxlength="30"
+                        title="Código identificador opcional del participante" inputmode="text">
+                </div>
+                <div class="meta-item">
+                    <label for="campamento">Campamento</label>
+                    <input type="text" id="campamento" name="campamento" placeholder="Nombre del campamento"
+                        title="Nombre del campamento donde labora" inputmode="text">
+                </div>
+                <div class="meta-item">
+                    <label for="sector">Sector</label>
+                    <select id="sector" name="sector" title="Seleccione el sector donde labora">
+                        <option value="">Seleccionar sector</option>
+                        <option value="Sector 1">Sector 1</option>
+                        <option value="Sector 2">Sector 2</option>
+                        <option value="Sector 3">Sector 3</option>
+                        <option value="Sector 4">Sector 4</option>
+                        <option value="Sector 5">Sector 5</option>
+                        <option value="Sector 6">Sector 6</option>
+                        <option value="Sector 7">Sector 7</option>
+                        <option value="Sector 8">Sector 8</option>
+                        <option value="Sector 9">Sector 9</option>
+                        <option value="Sector 10">Sector 10</option>
+                        <option value="Sector 11">Sector 11</option>
+                        <option value="Sector 12">Sector 12</option>
+                    </select>
+                </div>
+                <div class="meta-item">
+                    <label for="fecha">Fecha</label>
+                    <input type="date" id="fecha" name="fecha" title="Seleccione la fecha de la evaluación">
+                </div>
+            </div>
+        </div>
+
+        <div class="notice">
+            ✅ La encuesta es <strong>anónima y voluntaria</strong>. Los datos generales ayudan al análisis interno. La
+            información se analiza de forma grupal y no se revisan respuestas individuales.
+        </div>
+
+        <div id="form-sections-container"></div>
+
+        <div class="comments-area">
+            <label for="comentarios">💬 Comentarios y recomendaciones:</label>
+            <textarea id="comentarios" name="comentarios" rows="4"
+                placeholder="Escribe aquí tus sugerencias, observaciones o comentarios..."
+                title="Espacio para escribir comentarios y sugerencias adicionales"></textarea>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-secondary" id="resetBtn" title="Reiniciar todas las respuestas del formulario">🔄
+                Reiniciar</button>
+            <button class="btn btn-primary" id="submitBtn" title="Enviar la evaluación de satisfacción">📬 Enviar
+                evaluación</button>
+        </div>
+        <footer>
+            Marca con una 'X' el número que mejor refleje tu satisfacción • 1 = Malo / 2 = Regular / 3 = Bueno
+        </footer>
+    </div>
+    <div id="toastMsg" class="toast-message"></div>
+
+    <script>
+        const sectionsData = [
+            {
+                title: "A. Satisfacción General en el Campamento",
+                questions: [
+                    "Me siento satisfecho(a) con el trato que recibo del personal del campamento",
+                    "Me siento satisfecho(a) con las mejoras realizadas en el campamento",
+                    "Me siento satisfecho(a) con las condiciones del campamento (higiene, orden y limpieza)."
+                ]
+            },
+            {
+                title: "B. Alimentación en el Campamento",
+                questions: [
+                    "Me siento satisfecho(a) con la variedad y cantidad de la comida.",
+                    "Me siento satisfecho(a) con la calidad y preparación de los alimentos."
+                ]
+            },
+            {
+                title: "C. Actividades de Campo",
+                questions: [
+                    "Me siento satisfecho(a) con el tipo de actividad que realizo.",
+                    "Me siento satisfecho(a) con el pago que recibo por mi trabajo.",
+                    "Me siento satisfecho(a) con las indicaciones recibidas para realizar mi trabajo."
+                ]
+            },
+            {
+                title: "D. Trato y Supervisión",
+                questions: [
+                    "Me siento satisfecho(a) con el trato que recibo de supervisores.",
+                    "Me siento satisfecho(a) con la motivación y reconocimiento en mi trabajo.",
+                    "Me siento satisfecho(a) con la forma en que se escuchan y resuelven sugerencias o reclamos."
+                ]
+            },
+            {
+                title: "E. Logística y Horarios",
+                questions: [
+                    "Me siento satisfecho(a) con los recorridos o traslados hacia el trabajo.",
+                    "Me siento satisfecho(a) con el cumplimiento de los horarios de recorrido"
+                ]
+            },
+            {
+                title: "F. Equipos de Protección Personal (EPP)",
+                questions: [
+                    "Me siento satisfecho(a) con el EPP que se me entrega.",
+                    "Me siento satisfecho(a) con el estado y renovación del EPP."
+                ]
+            },
+            {
+                title: "G. Atención en Enfermería",
+                questions: [
+                    "Me siento satisfecho(a) con la atención recibida en enfermería.",
+                    "Me siento satisfecho(a) con el seguimiento que brinda el personal de salud."
+                ]
+            },
+            {
+                title: "H. Comisariato",
+                questions: [
+                    "Me siento satisfecho(a) con la variedad y disponibilidad de productos.",
+                    "Me siento satisfecho(a) con los precios de los productos."
+                ]
+            },
+            {
+                title: "I. Deportes y Medios de Recreación",
+                questions: [
+                    "Me siento satisfecho(a) con los espacios para practicar deportes.",
+                    "Me siento satisfecho(a) con las actividades recreativas que se organizan."
+                ]
+            }
+        ];
+
+        let allRadioGroups = [];
+
+        function generateForm() {
+            const container = document.getElementById('form-sections-container');
+            container.innerHTML = '';
+            allRadioGroups = [];
+
+            sectionsData.forEach((section, secIndex) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'section-title';
+                titleDiv.innerText = section.title;
+                sectionDiv.appendChild(titleDiv);
+
+                section.questions.forEach((questionText, qIndex) => {
+                    const groupName = `sec_${secIndex}_q_${qIndex}`;
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = 'question-row';
+
+                    const questionSpan = document.createElement('div');
+                    questionSpan.className = 'question-text';
+                    questionSpan.innerText = questionText;
+
+                    const ratingDiv = document.createElement('div');
+                    ratingDiv.className = 'rating-group';
+                    ratingDiv.setAttribute('role', 'radiogroup');
+                    ratingDiv.setAttribute('aria-label', `Opciones de calificación para: ${questionText}`);
+
+                    const options = [
+                        { value: 1, label: '1 · Malo' },
+                        { value: 2, label: '2 · Regular' },
+                        { value: 3, label: '3 · Bueno' }
+                    ];
+
+                    options.forEach(opt => {
+                        const radioId = `${groupName}_${opt.value}`;
+                        const radioOption = document.createElement('div');
+                        radioOption.className = 'rating-option';
+
+                        const radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = groupName;
+                        radio.value = opt.value;
+                        radio.id = radioId;
+                        radio.setAttribute('aria-label', `${opt.label} para: ${questionText.substring(0, 50)}`);
+
+                        const label = document.createElement('label');
+                        label.htmlFor = radioId;
+                        label.innerText = opt.label;
+
+                        radioOption.appendChild(radio);
+                        radioOption.appendChild(label);
+                        ratingDiv.appendChild(radioOption);
+
+                        allRadioGroups.push({
+                            sectionIdx: secIndex,
+                            questionIdx: qIndex,
+                            name: groupName,
+                            radioElement: radio,
+                            value: opt.value
+                        });
+                    });
+
+                    rowDiv.appendChild(questionSpan);
+                    rowDiv.appendChild(ratingDiv);
+                    sectionDiv.appendChild(rowDiv);
+                });
+
+                container.appendChild(sectionDiv);
+            });
+        }
+
+        function collectAnswers() {
+            const answers = [];
+            for (let s = 0; s < sectionsData.length; s++) {
+                answers[s] = new Array(sectionsData[s].questions.length).fill(null);
+            }
+
+            const groupsMap = new Map();
+            allRadioGroups.forEach(item => {
+                if (!groupsMap.has(item.name)) groupsMap.set(item.name, []);
+                groupsMap.get(item.name).push(item);
+            });
+
+            for (let [name, radios] of groupsMap.entries()) {
+                let selectedVal = null;
+                for (let r of radios) {
+                    if (r.radioElement.checked) {
+                        selectedVal = parseInt(r.value, 10);
+                        break;
+                    }
+                }
+                if (selectedVal !== null) {
+                    const sample = radios[0];
+                    const secIdx = sample.sectionIdx;
+                    const qIdx = sample.questionIdx;
+                    if (answers[secIdx] && answers[secIdx][qIdx] === null) {
+                        answers[secIdx][qIdx] = selectedVal;
+                    }
+                }
+            }
+            return answers;
+        }
+
+        function loadStoredAnswers() {
+            const stored = localStorage.getItem('campamento_satisfaccion_respuestas');
+            if (!stored) return;
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length === sectionsData.length) {
+                    for (let s = 0; s < parsed.length; s++) {
+                        const secAnswers = parsed[s];
+                        if (!secAnswers) continue;
+                        for (let q = 0; q < secAnswers.length; q++) {
+                            const val = secAnswers[q];
+                            if (val !== null && [1, 2, 3].includes(val)) {
+                                const groupName = `sec_${s}_q_${q}`;
+                                const radioToCheck = document.querySelector(`input[name="${groupName}"][value="${val}"]`);
+                                if (radioToCheck) radioToCheck.checked = true;
+                            }
+                        }
+                    }
+                }
+            } catch (e) { console.warn(e); }
+        }
+
+        function storeCurrentAnswers() {
+            const answers = collectAnswers();
+            localStorage.setItem('campamento_satisfaccion_respuestas', JSON.stringify(answers));
+        }
+
+        function resetAllAnswers() {
+            for (let item of allRadioGroups) {
+                if (item.radioElement) item.radioElement.checked = false;
+            }
+            showToast("✓ Todas las calificaciones han sido reiniciadas");
+            localStorage.removeItem('campamento_satisfaccion_respuestas');
+        }
+
+        function showToast(message, duration = 2800) {
+            const toast = document.getElementById('toastMsg');
+            toast.innerText = message;
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, duration);
+        }
+
+        function getFormDataForExport() {
+            const answersMatrix = collectAnswers();
+            const sectorSelect = document.getElementById('sector');
+            const result = {
+                metadata: {
+                    codigo: document.getElementById('codigo').value.trim(),
+                    campamento: document.getElementById('campamento').value.trim(),
+                    sector: sectorSelect.value,
+                    fecha: document.getElementById('fecha').value,
+                },
+                comentarios: document.getElementById('comentarios').value,
+                respuestas_por_seccion: []
+            };
+
+            for (let i = 0; i < sectionsData.length; i++) {
+                const section = sectionsData[i];
+                const preguntasConRespuesta = [];
+                for (let j = 0; j < section.questions.length; j++) {
+                    preguntasConRespuesta.push({
+                        pregunta: section.questions[j],
+                        puntuacion: answersMatrix[i]?.[j] ?? null
+                    });
+                }
+                result.respuestas_por_seccion.push({
+                    titulo: section.title,
+                    items: preguntasConRespuesta
+                });
+            }
+            return result;
+        }
+
+        function validateRequiredRatings() {
+            const answers = collectAnswers();
+            let missingCount = 0;
+            for (let s = 0; s < answers.length; s++) {
+                for (let q = 0; q < answers[s].length; q++) {
+                    if (answers[s][q] === null) missingCount++;
+                }
+            }
+            return missingCount === 0;
+        }
+
+        function submitEvaluation() {
+            const allAnswered = validateRequiredRatings();
+            if (!allAnswered) {
+                showToast("⚠️ Por favor, selecciona 1, 2 o 3 para TODAS las preguntas", 3500);
+                return;
+            }
+
+            const formData = getFormDataForExport();
+            localStorage.setItem('campamento_satisfaccion_ultimo_envio', JSON.stringify(formData));
+
+            console.log("=== EVALUACIÓN ENVIADA ===");
+            console.log(JSON.stringify(formData, null, 2));
+
+            let resumen = "✅ Evaluación registrada exitosamente.\n\n";
+            resumen += `📌 Campamento: ${formData.metadata.campamento || "—"} | Sector: ${formData.metadata.sector || "—"}\n`;
+            resumen += `📅 Fecha: ${formData.metadata.fecha || "—"}\n`;
+            resumen += `💬 Comentarios: ${formData.comentarios ? "Incluidos" : "Sin comentarios"}\n`;
+            resumen += `📊 Total: ${formData.respuestas_por_seccion.reduce((acc, sec) => acc + sec.items.length, 0)} preguntas calificadas.\n\n`;
+            resumen += `Los datos se analizan de forma grupal. ¡Gracias por tu participación!`;
+
+            alert(resumen);
+            showToast("📊 Respuestas guardadas. ¡Gracias!", 3000);
+        }
+
+        function attachAutoSave() {
+            const container = document.getElementById('form-sections-container');
+            container.addEventListener('change', (e) => {
+                if (e.target && e.target.type === 'radio') {
+                    storeCurrentAnswers();
+                }
+            });
+
+            const saveMeta = () => {
+                const meta = {
+                    codigo: document.getElementById('codigo').value,
+                    campamento: document.getElementById('campamento').value,
+                    sector: document.getElementById('sector').value,
+                    fecha: document.getElementById('fecha').value,
+                };
+                localStorage.setItem('campamento_meta_fields', JSON.stringify(meta));
+            };
+
+            document.getElementById('codigo').addEventListener('input', saveMeta);
+            document.getElementById('campamento').addEventListener('input', saveMeta);
+            document.getElementById('sector').addEventListener('change', saveMeta);
+            document.getElementById('fecha').addEventListener('change', saveMeta);
+
+            document.getElementById('comentarios').addEventListener('input', () => {
+                const coment = document.getElementById('comentarios').value;
+                localStorage.setItem('campamento_comentario_temp', coment);
+            });
+
+            const savedComment = localStorage.getItem('campamento_comentario_temp');
+            if (savedComment) document.getElementById('comentarios').value = savedComment;
+
+            const savedMeta = localStorage.getItem('campamento_meta_fields');
+            if (savedMeta) {
+                try {
+                    const meta = JSON.parse(savedMeta);
+                    if (meta.codigo) document.getElementById('codigo').value = meta.codigo;
+                    if (meta.campamento) document.getElementById('campamento').value = meta.campamento;
+                    if (meta.sector) document.getElementById('sector').value = meta.sector;
+                    if (meta.fecha) document.getElementById('fecha').value = meta.fecha;
+                } catch (e) { }
+            }
+
+            document.getElementById('codigo').addEventListener('input', () => storeCurrentAnswers());
+            document.getElementById('campamento').addEventListener('input', () => storeCurrentAnswers());
+            document.getElementById('sector').addEventListener('change', () => storeCurrentAnswers());
+            document.getElementById('fecha').addEventListener('change', () => storeCurrentAnswers());
+        }
+
+        function setDefaultDate() {
+            const fechaInput = document.getElementById('fecha');
+            if (!fechaInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                fechaInput.value = today;
+            }
+        }
+
+        function init() {
+            generateForm();
+            setDefaultDate();
+            attachAutoSave();
+            loadStoredAnswers();
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                resetAllAnswers();
+                localStorage.removeItem('campamento_satisfaccion_respuestas');
+            });
+
+            document.getElementById('submitBtn').addEventListener('click', submitEvaluation);
+
+            document.getElementById('comentarios').addEventListener('input', () => {
+                localStorage.setItem('campamento_comentario_temp', document.getElementById('comentarios').value);
+            });
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
