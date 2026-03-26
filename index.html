@@ -16,9 +16,139 @@
         body {
             background: linear-gradient(135deg, #eef2f5 0%, #e3e9ef 100%);
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            padding: 1rem;
             color: #1a2c3e;
             min-height: 100vh;
+        }
+
+        /* Loader de entrada (pantalla completa) */
+        .initial-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0b3b4f 0%, #1a5e6f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .initial-loader.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Loader animado */
+        .loading {
+            --speed-of-animation: 0.9s;
+            --gap: 6px;
+            --first-color: #4c86f9;
+            --second-color: #49a84c;
+            --third-color: #f6bb02;
+            --fourth-color: #f6bb02;
+            --fifth-color: #2196f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            gap: 6px;
+            height: 100px;
+        }
+
+        .loading span {
+            width: 4px;
+            height: 50px;
+            background: var(--first-color);
+            animation: scale var(--speed-of-animation) ease-in-out infinite;
+            border-radius: 2px;
+        }
+
+        .loading span:nth-child(2) {
+            background: var(--second-color);
+            animation-delay: -0.8s;
+        }
+
+        .loading span:nth-child(3) {
+            background: var(--third-color);
+            animation-delay: -0.7s;
+        }
+
+        .loading span:nth-child(4) {
+            background: var(--fourth-color);
+            animation-delay: -0.6s;
+        }
+
+        .loading span:nth-child(5) {
+            background: var(--fifth-color);
+            animation-delay: -0.5s;
+        }
+
+        @keyframes scale {
+
+            0%,
+            40%,
+            100% {
+                transform: scaleY(0.05);
+            }
+
+            20% {
+                transform: scaleY(1);
+            }
+        }
+
+        /* Loader overlay para el envío - Compatibilidad con Safari */
+        .submit-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            /* Soporte para Safari y otros navegadores */
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .submit-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .submit-loader {
+            background: white;
+            border-radius: 24px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-loader p {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a5e6f;
+        }
+
+        /* Contenido principal (inicialmente oculto) */
+        .main-content {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            padding: 1rem;
+        }
+
+        .main-content.visible {
+            opacity: 1;
         }
 
         .container {
@@ -33,7 +163,7 @@
         }
 
         @media (min-width: 768px) {
-            body {
+            .main-content {
                 padding: 2rem;
             }
 
@@ -134,7 +264,6 @@
             cursor: pointer;
         }
 
-        /* Estilo específico para input date en móviles */
         .meta-item input[type="date"] {
             position: relative;
             -webkit-appearance: none;
@@ -432,6 +561,12 @@
             transform: translateY(0);
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .toast-message {
             position: fixed;
             bottom: 20px;
@@ -488,10 +623,10 @@
             scroll-behavior: smooth;
         }
 
-        /* Mejora para que el calendario en móviles sea más visible */
-        @media (hover: none) and (pointer: coarse) {
-            .meta-item input[type="date"] {
-                font-size: 16px;
+        /* Fallback para Safari si backdrop-filter no es soportado */
+        @supports not (backdrop-filter: blur(8px)) {
+            .submit-overlay {
+                background: rgba(0, 0, 0, 0.85);
             }
         }
     </style>
@@ -499,71 +634,99 @@
 
 <body>
 
-    <div class="container">
-        <div class="header">
-            <div class="title-section">
-                <h1>📋 Evaluación de satisfacción</h1>
-                <p>Personal de campamento · Escala: 1 = Malo &nbsp;|&nbsp; 2 = Regular &nbsp;|&nbsp; 3 = Bueno</p>
+    <!-- Loader de entrada -->
+    <div class="initial-loader" id="initialLoader">
+        <div class="loading">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <!-- Loader overlay para el envío -->
+    <div class="submit-overlay" id="submitOverlay">
+        <div class="submit-loader">
+            <div class="loading">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-            <div class="meta-fields">
-                <div class="meta-item">
-                    <label for="codigo">Código (opcional)</label>
-                    <input type="text" id="codigo" name="codigo" placeholder="Ej: CAMP-01" maxlength="30"
-                        title="Código identificador opcional del participante" inputmode="text">
+            <p>Enviando evaluación...</p>
+        </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="main-content" id="mainContent">
+        <div class="container">
+            <div class="header">
+                <div class="title-section">
+                    <h1>📋 Evaluación de satisfacción</h1>
+                    <p>Personal de campamento · Escala: 1 = Malo &nbsp;|&nbsp; 2 = Regular &nbsp;|&nbsp; 3 = Bueno</p>
                 </div>
-                <div class="meta-item">
-                    <label for="campamento">Campamento</label>
-                    <input type="text" id="campamento" name="campamento" placeholder="Nombre del campamento"
-                        title="Nombre del campamento donde labora" inputmode="text">
-                </div>
-                <div class="meta-item">
-                    <label for="sector">Sector</label>
-                    <select id="sector" name="sector" title="Seleccione el sector donde labora">
-                        <option value="">Seleccionar sector</option>
-                        <option value="Sector 1">Sector 1</option>
-                        <option value="Sector 2">Sector 2</option>
-                        <option value="Sector 3">Sector 3</option>
-                        <option value="Sector 4">Sector 4</option>
-                        <option value="Sector 5">Sector 5</option>
-                        <option value="Sector 6">Sector 6</option>
-                        <option value="Sector 7">Sector 7</option>
-                        <option value="Sector 8">Sector 8</option>
-                        <option value="Sector 9">Sector 9</option>
-                        <option value="Sector 10">Sector 10</option>
-                        <option value="Sector 11">Sector 11</option>
-                        <option value="Sector 12">Sector 12</option>
-                    </select>
-                </div>
-                <div class="meta-item">
-                    <label for="fecha">Fecha</label>
-                    <input type="date" id="fecha" name="fecha" title="Seleccione la fecha de la evaluación">
+                <div class="meta-fields">
+                    <div class="meta-item">
+                        <label for="codigo">Código (opcional)</label>
+                        <input type="text" id="codigo" name="codigo" placeholder="Ej: CAMP-01" maxlength="30"
+                            title="Código identificador opcional del participante" inputmode="text">
+                    </div>
+                    <div class="meta-item">
+                        <label for="campamento">Campamento</label>
+                        <input type="text" id="campamento" name="campamento" placeholder="Nombre del campamento"
+                            title="Nombre del campamento donde labora" inputmode="text">
+                    </div>
+                    <div class="meta-item">
+                        <label for="sector">Sector</label>
+                        <select id="sector" name="sector" title="Seleccione el sector donde labora">
+                            <option value="">Seleccionar sector</option>
+                            <option value="Sector 1">Sector 1</option>
+                            <option value="Sector 2">Sector 2</option>
+                            <option value="Sector 3">Sector 3</option>
+                            <option value="Sector 4">Sector 4</option>
+                            <option value="Sector 5">Sector 5</option>
+                            <option value="Sector 6">Sector 6</option>
+                            <option value="Sector 7">Sector 7</option>
+                            <option value="Sector 8">Sector 8</option>
+                            <option value="Sector 9">Sector 9</option>
+                            <option value="Sector 10">Sector 10</option>
+                            <option value="Sector 11">Sector 11</option>
+                            <option value="Sector 12">Sector 12</option>
+                        </select>
+                    </div>
+                    <div class="meta-item">
+                        <label for="fecha">Fecha</label>
+                        <input type="date" id="fecha" name="fecha" title="Seleccione la fecha de la evaluación">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="notice">
-            ✅ La encuesta es <strong>anónima y voluntaria</strong>. Los datos generales ayudan al análisis interno. La
-            información se analiza de forma grupal y no se revisan respuestas individuales.
-        </div>
+            <div class="notice">
+                ✅ La encuesta es <strong>anónima y voluntaria</strong>. Los datos generales ayudan al análisis interno.
+                La información se analiza de forma grupal y no se revisan respuestas individuales.
+            </div>
 
-        <div id="form-sections-container"></div>
+            <div id="form-sections-container"></div>
 
-        <div class="comments-area">
-            <label for="comentarios">💬 Comentarios y recomendaciones:</label>
-            <textarea id="comentarios" name="comentarios" rows="4"
-                placeholder="Escribe aquí tus sugerencias, observaciones o comentarios..."
-                title="Espacio para escribir comentarios y sugerencias adicionales"></textarea>
-        </div>
+            <div class="comments-area">
+                <label for="comentarios">💬 Comentarios y recomendaciones:</label>
+                <textarea id="comentarios" name="comentarios" rows="4"
+                    placeholder="Escribe aquí tus sugerencias, observaciones o comentarios..."
+                    title="Espacio para escribir comentarios y sugerencias adicionales"></textarea>
+            </div>
 
-        <div class="action-buttons">
-            <button class="btn btn-secondary" id="resetBtn" title="Reiniciar todas las respuestas del formulario">🔄
-                Reiniciar</button>
-            <button class="btn btn-primary" id="submitBtn" title="Enviar la evaluación de satisfacción">📬 Enviar
-                evaluación</button>
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="resetBtn" title="Reiniciar todas las respuestas del formulario">🔄
+                    Reiniciar</button>
+                <button class="btn btn-primary" id="submitBtn" title="Enviar la evaluación de satisfacción">📬 Enviar
+                    evaluación</button>
+            </div>
+            <footer>
+                Marca con una 'X' el número que mejor refleje tu satisfacción • 1 = Malo / 2 = Regular / 3 = Bueno
+            </footer>
         </div>
-        <footer>
-            Marca con una 'X' el número que mejor refleje tu satisfacción • 1 = Malo / 2 = Regular / 3 = Bueno
-        </footer>
     </div>
     <div id="toastMsg" class="toast-message"></div>
 
@@ -829,12 +992,22 @@
             return missingCount === 0;
         }
 
-        function submitEvaluation() {
+        async function submitEvaluation() {
             const allAnswered = validateRequiredRatings();
             if (!allAnswered) {
                 showToast("⚠️ Por favor, selecciona 1, 2 o 3 para TODAS las preguntas", 3500);
                 return;
             }
+
+            const submitOverlay = document.getElementById('submitOverlay');
+            const submitBtn = document.getElementById('submitBtn');
+            const resetBtn = document.getElementById('resetBtn');
+
+            submitOverlay.classList.add('active');
+            submitBtn.disabled = true;
+            resetBtn.disabled = true;
+
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
             const formData = getFormDataForExport();
             localStorage.setItem('campamento_satisfaccion_ultimo_envio', JSON.stringify(formData));
@@ -848,6 +1021,10 @@
             resumen += `💬 Comentarios: ${formData.comentarios ? "Incluidos" : "Sin comentarios"}\n`;
             resumen += `📊 Total: ${formData.respuestas_por_seccion.reduce((acc, sec) => acc + sec.items.length, 0)} preguntas calificadas.\n\n`;
             resumen += `Los datos se analizan de forma grupal. ¡Gracias por tu participación!`;
+
+            submitOverlay.classList.remove('active');
+            submitBtn.disabled = false;
+            resetBtn.disabled = false;
 
             alert(resumen);
             showToast("📊 Respuestas guardadas. ¡Gracias!", 3000);
@@ -925,6 +1102,18 @@
             document.getElementById('comentarios').addEventListener('input', () => {
                 localStorage.setItem('campamento_comentario_temp', document.getElementById('comentarios').value);
             });
+
+            setTimeout(() => {
+                const initialLoader = document.getElementById('initialLoader');
+                const mainContent = document.getElementById('mainContent');
+
+                initialLoader.classList.add('hide');
+                mainContent.classList.add('visible');
+
+                setTimeout(() => {
+                    initialLoader.style.display = 'none';
+                }, 500);
+            }, 3000);
         }
 
         init();
